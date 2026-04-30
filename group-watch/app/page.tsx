@@ -8,6 +8,7 @@ export default function Home() {
   const [roomName, setRoomName] = useState("");
   const router = useRouter();
   const [userId, setUserId] = useState("");
+  const [roomId, setRoomId] = useState("");
 
   useEffect(() => {
     let id = localStorage.getItem("userId");
@@ -21,9 +22,8 @@ export default function Home() {
   }, []);
  
    const handleCreateRoom = async () => {
-    const userId = localStorage.getItem("userId");
 
-    const res = await fetch("/api/room/create", {
+    const res = await fetch("http://localhost:4000/api/createRoom", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -32,9 +32,17 @@ export default function Home() {
     });
 
     const data:{id:string} = await res.json();
-
+    console.log(data);
     router.push(`/watch/${data.id}`);
   };
+
+  const handleJoinRoom = () => {
+    if (!roomId) {
+      alert("Please enter a room ID");
+      return;
+    }
+    router.push(`/watch/${roomId}`);
+  }
 
 
 
@@ -44,7 +52,11 @@ export default function Home() {
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black"> 
             <h1>GroupWatch</h1>
             <p>Welcome to the GroupWatch!</p>
-            <button className="border bg-red-500 text-white px-4 py-2 rounded">Join</button>
+            <input type="text" placeholder="Room ID" value={roomId} onChange={e => setRoomId(e.target.value)}/>
+            <button className="border bg-red-500 text-white px-4 py-2 rounded" onClick={handleJoinRoom}>
+              Join
+            </button>
+            <input type="text" placeholder="Enter Room Name" value={roomName} onChange={e => setRoomName(e.target.value)}/>
             <button className="border bg-blue-500 text-white px-4 py-2 rounded" onClick={handleCreateRoom}>
               CreateRoom
             </button>

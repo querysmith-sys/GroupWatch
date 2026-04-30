@@ -18,7 +18,7 @@ export const CreateRoom =  ( room_name:string, userId:string ) => {
         users: [userId]
     }
     rooms.set(roomId, room);
-
+    console.log(rooms)
     return room
 }
 
