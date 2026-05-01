@@ -50,3 +50,10 @@ export const LeaveRoom = ( roomId:string, userId:string) => {
 
     return room;
 }
+
+
+
+export const checkRoomExist = (roomId:string) => {
+    const room = rooms.has(roomId);
+    return room;
+}
