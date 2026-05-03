@@ -14,7 +14,7 @@ type chatData = {
 
 
 
-export function eventHandler(socket:Socket) {
+export function eventHandler(socket:Socket, io: any) {
     socket.on("joinRoom", ({roomId, userId}:{roomId: string, userId: string}) => {
         const room = JoinRoom(roomId, userId);
         socket.join(roomId);
@@ -32,7 +32,15 @@ export function eventHandler(socket:Socket) {
              throw new Error("Room not exist");
         }
         const msg = data.msg.content;
-        socket.to(data.roomId).emit("receivedMessage", {userId: data.userId, message: {content: msg}})
+        // send it everyone in the room including sender
+        io.to(data.roomId).emit("receivedMessage", {userId: data.userId, message: {content: msg}})
+    })
+
+    socket.on("sendVideo", (data:{roomId: string, userId: string, videoId: string}) => {
+        if (!checkRoomExist(data.roomId))  {
+            throw new Error("Room not exist");
+        }
+        io.to(data.roomId).emit("receivedVideo", {userId: data.userId, videoId: data.videoId})
     })
 }
 

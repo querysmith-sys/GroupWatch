@@ -17,7 +17,7 @@ const io = new Server(httpServer, {
 
 io.on("connection", (socket: Socket) => {
   console.log("a user connected");
-  eventHandler(socket);
+  eventHandler(socket, io);
 });
 
 app.use(express.json());
