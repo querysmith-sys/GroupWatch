@@ -23,6 +23,12 @@ export function eventHandler(socket:Socket, io: any) {
 
     socket.on("leaveRoom", ({roomId, userId}:{roomId: string, userId: string}) => {
         const room = LeaveRoom(roomId, userId);
+        if (room?.deleted) {
+            console.log("Host left, room deleted")
+            socket.to(roomId).emit("hostLeft", { msg: `The host has left the room ${room.name}` })
+            socket.leave(roomId);
+            return;
+        }
         socket.leave(roomId);
         socket.to(roomId).emit("userLeft", { msg: `${userId} left the room ${room?.name}`} )
     })

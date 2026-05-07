@@ -3,7 +3,8 @@ type Room  = {
     id: string,
     name: string,
     host: string,
-    users: string[]
+    users: string[],
+    deleted?: boolean | false
 }
 const rooms: Map<string, Room> = new Map();
 
@@ -22,7 +23,7 @@ export const CreateRoom =  ( room_name:string, userId:string ) => {
     return room
 }
 
-
+// TODO: handle the case where when host  or user unmount by editing the roomid in url  he should be shown page not fouond or room not found in frontend
 export const JoinRoom =  ( roomId:string, userId:string) => {
     const room = rooms.get(roomId);
     if (!room) {
@@ -37,16 +38,18 @@ export const JoinRoom =  ( roomId:string, userId:string) => {
 export const LeaveRoom = ( roomId:string, userId:string) => {
     const room =  rooms.get(roomId);
     if (!room) {
-        throw new Error("Room not found");
+       return;
     }
     if (!room.users.includes(userId)) {
         return room;
     }
     if (userId === room.host) {
+        room.deleted = true; 
+        const roomDeletedInfo = room;
         rooms.delete(roomId)
-        return;
+        return roomDeletedInfo;
     }
-    room.users.filter(item => item != userId);
+    room.users = room.users.filter(item => item != userId);
 
     return room;
 }

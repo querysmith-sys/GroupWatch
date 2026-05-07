@@ -1,7 +1,7 @@
 "use client"
 import { io, Socket } from "socket.io-client"
 import { useEffect, useState, useRef } from "react"
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 
 export default function Page() {
     const { id } = useParams();
@@ -11,19 +11,23 @@ export default function Page() {
     const [inputText, setInputText] = useState("");
     const [vidUrl, setVidUrl] = useState("");
     const [recivedVideo, setRecievedVideo] = useState("");
-
-
+    const router = useRouter();
 
     const vidId = vidUrl.split("v=")[1];
-
+    const hasJoined = useRef(false);
     useEffect(() => {
+        if (hasJoined.current) return; 
+        hasJoined.current = true;
         socketRef.current = io("http://localhost:4000");
 
+
+        const emitLeave = () => {
+        socketRef.current?.emit("leaveRoom", { roomId: id, userId: userId });
+    };
+     window.addEventListener("beforeunload", emitLeave);
         socketRef.current.on("connect", () => {
             console.log(socketRef.current?.id)
             socketRef.current?.emit("joinRoom", { roomId: id, userId: userId });
-            // socketRef.current?.emit("sendMessage", {roomId: id, userId: userId, msg: {content: message}});
-            // socketRef.current?.emit("sendVideo", )
 
         })
         socketRef.current.on("userJoined", (data) => {
@@ -34,7 +38,6 @@ export default function Page() {
             alert(data.msg)
         })
         socketRef.current.on("receivedMessage", (data) => {
-            // alert(`${data.userId} : ${data.message.content}`)
             setMessage(prev => [...prev, {userId: data.userId, content: data.message.content}])
         })
         socketRef.current.on("receivedVideo", (data) => {
@@ -42,15 +45,27 @@ export default function Page() {
             setRecievedVideo(data.videoId);
         })
 
+        socketRef.current.on("hostLeft", (data) => {
+            alert(data.msg);
+            router.push("/"); 
+        })
+
         return () => {
-            socketRef.current?.emit("leaveRoom", { roomId: id, userId: userId });
+            if (hasJoined.current) return; 
+            console.log("it recahes here")
+            window.removeEventListener("beforeunload", emitLeave);
+            emitLeave();
+            // socketRef.current?.emit("leaveRoom", { roomId: id, userId: userId });
             socketRef.current?.off("userJoined");
             socketRef.current?.off("userLeft");
+            socketRef.current?.off("receivedMessage");
             socketRef.current?.off("receivedVideo");
-            socketRef.current?.disconnect();
+            socketRef.current?.off("hostLeft");
+            // socketRef.current?.disconnect();
         }
 
     }, [])
+
     return (
         <div className="flex h-screen gap-4 p-4">
             <div className="w-[70%] flex flex-col border rounded-lg bg-gray-50">
