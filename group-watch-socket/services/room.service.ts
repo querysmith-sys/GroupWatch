@@ -60,3 +60,10 @@ export const checkRoomExist = (roomId:string) => {
     const room = rooms.has(roomId);
     return room;
 }
+
+export const isHost = (roomId:string, userId:string)  => {
+    const room = rooms.get(roomId);
+    if (!room) {console.log("Room not found"); return false};
+    if (room.host === userId) return true;
+    return false;
+}

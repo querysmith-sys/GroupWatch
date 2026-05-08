@@ -1,7 +1,8 @@
 "use client"
 import { io, Socket } from "socket.io-client"
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, useContext } from "react"
 import { useParams, useRouter } from 'next/navigation';
+import { HostContext } from "@/app/context/hostContext";
 
 export default function Page() {
     const { id } = useParams();
@@ -12,19 +13,21 @@ export default function Page() {
     const [vidUrl, setVidUrl] = useState("");
     const [recivedVideo, setRecievedVideo] = useState("");
     const router = useRouter();
-
+    const playerRef = useRef(null);
+    const [apiReady, setApiReady] = useState(false);
+    const { isHost } = useContext(HostContext);
     const vidId = vidUrl.split("v=")[1];
     const hasJoined = useRef(false);
+
     useEffect(() => {
-        if (hasJoined.current) return; 
+        if (hasJoined.current) return;
         hasJoined.current = true;
         socketRef.current = io("http://localhost:4000");
 
-
         const emitLeave = () => {
-        socketRef.current?.emit("leaveRoom", { roomId: id, userId: userId });
-    };
-     window.addEventListener("beforeunload", emitLeave);
+            socketRef.current?.emit("leaveRoom", { roomId: id, userId: userId });
+        };
+        window.addEventListener("beforeunload", emitLeave);
         socketRef.current.on("connect", () => {
             console.log(socketRef.current?.id)
             socketRef.current?.emit("joinRoom", { roomId: id, userId: userId });
@@ -38,7 +41,7 @@ export default function Page() {
             alert(data.msg)
         })
         socketRef.current.on("receivedMessage", (data) => {
-            setMessage(prev => [...prev, {userId: data.userId, content: data.message.content}])
+            setMessage(prev => [...prev, { userId: data.userId, content: data.message.content }])
         })
         socketRef.current.on("receivedVideo", (data) => {
             alert(`${data.userId} shared a video with id ${data.videoId}`)
@@ -47,11 +50,38 @@ export default function Page() {
 
         socketRef.current.on("hostLeft", (data) => {
             alert(data.msg);
-            router.push("/"); 
+            router.push("/");
         })
 
+        // listener for videoAction evnt
+        socketRef.current.on("videoAction", (data) => {
+            if (data.action === "PLAY") {
+                (playerRef as any).current?.seekTo(data.currentTime, true);
+                (playerRef as any).current?.playVideo();
+            }
+
+            if (data.action === "PAUSE") {
+                (playerRef as any).current?.pauseVideo();
+            }
+        })
+
+        // running the scriptdownloads the source code logic and execute it, it creates a object window.yt so if it is not created it creates a script tag and add it to the dom and define a global callback function onYouTubeIframeAPIReady which is called when the script is loaded and ready to use and in that we set apiReady to true so that we can render the player
+    if (!(window as any).YT) {
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+        
+        // 2. Define the global callback
+        (window as any).onYouTubeIframeAPIReady = () => {
+            setApiReady(true);
+        };
+    } else {
+        setApiReady(true);
+    }
+
         return () => {
-            if (hasJoined.current) return; 
+            if (hasJoined.current) return;
             console.log("it recahes here")
             window.removeEventListener("beforeunload", emitLeave);
             emitLeave();
@@ -66,6 +96,39 @@ export default function Page() {
 
     }, [])
 
+    useEffect(() => {
+    if (apiReady && recivedVideo) {
+        if (!playerRef.current) {
+            // Create new player
+            playerRef.current = new (window as any).YT.Player('yt-player', {
+                videoId: recivedVideo,
+                playerVars:{
+                    'controls': isHost ? 1 : 0,
+                    'disablekb': isHost ? 1 : 0
+                },
+                events: {
+                    'onStateChange': (event: any) => {
+                        // Handle sync logic here (emit to socket when user pauses/plays)
+                        console.log("State changed:", event.data);
+                        let currEventState = event.data;
+                        let currentTime = (playerRef.current as any).getCurrentTime();
+                        if (currEventState === (window as any).YT.PlayerState.PLAYING) {
+                            socketRef.current?.emit("videoAction", { action:"PLAY",  currentTime: currentTime, roomId: id, userId: userId });
+                        }
+
+                        if (currEventState === (window as any).YT.PlayerState.PAUSED) {
+                            socketRef.current?.emit("videoAction", { action:"PAUSE",  currentTime: currentTime, roomId: id, userId: userId });
+                        }
+                    }
+                }
+            });
+        } else {
+            // If player exists, just load the new video
+            (playerRef.current as any).loadVideoById(recivedVideo);
+        }
+    }
+}, [apiReady, recivedVideo]);
+
     return (
         <div className="flex h-screen gap-4 p-4">
             <div className="w-[70%] flex flex-col border rounded-lg bg-gray-50">
@@ -73,12 +136,15 @@ export default function Page() {
                     <p className="text-lg font-semibold mb-2">Welcome to the watch page!</p>
                     <p className="text-sm text-gray-700">Room ID: {id}</p>
                     <div className="mt-4 rounded-lg border border-dashed border-gray-300 bg-white p-6 text-gray-600">
-                        <input type="text" placeholder="Youtube Video Url..." className="border rounded px-3 py-2" value={vidUrl} onChange={(e) => setVidUrl(e.target.value)}/>
+                        <input type="text" placeholder="Youtube Video Url..." className="border rounded px-3 py-2" value={vidUrl} onChange={(e) => setVidUrl(e.target.value)} />
                         <button className="border rounded bg-blue-500 text-white px-4 py-2 ml-2" onClick={() => {
-                            socketRef.current?.emit("sendVideo", {roomId: id, userId: userId, videoId: vidId})
+                            socketRef.current?.emit("sendVideo", { roomId: id, userId: userId, videoId: vidId })
                         }}>Fetch</button>
-                        <div>
-                            <iframe src={`https://www.youtube.com/embed/${recivedVideo}`} className="border-none"></iframe>
+                        {/* <div>
+                            <iframe id="yt-palyer" src={`https://www.youtube.com/embed/${recivedVideo}`} className="border-none"></iframe>
+                        </div> */}
+                        <div className="aspect-video w-full mt-4">
+                            <div id="yt-player"></div>
                         </div>
                     </div>
                 </div>

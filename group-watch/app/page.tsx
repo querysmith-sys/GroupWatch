@@ -1,14 +1,17 @@
 "use client"
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
-
+import { useState, useEffect, useContext } from "react";
+import { HostContext } from "./context/hostContext";
 
 
 export default function Home() {
   const [roomName, setRoomName] = useState("");
+  const { setIsHost } = useContext(HostContext);
   const router = useRouter();
   const [userId, setUserId] = useState("");
   const [roomId, setRoomId] = useState("");
+
+
 
   useEffect(() => {
     let id = localStorage.getItem("userId");
@@ -34,6 +37,7 @@ export default function Home() {
     const data:{id:string} = await res.json();
     console.log(data);
     router.push(`/watch/${data.id}`);
+    setIsHost(true);
   };
 
   const handleJoinRoom = () => {

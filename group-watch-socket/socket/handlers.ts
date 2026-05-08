@@ -1,4 +1,4 @@
-import { JoinRoom } from "../services/room.service";
+import { isHost, JoinRoom } from "../services/room.service";
 import { LeaveRoom } from "../services/room.service";
 import { checkRoomExist } from "../services/room.service";
 import { Socket } from "socket.io";
@@ -27,6 +27,7 @@ export function eventHandler(socket:Socket, io: any) {
             console.log("Host left, room deleted")
             socket.to(roomId).emit("hostLeft", { msg: `The host has left the room ${room.name}` })
             socket.leave(roomId);
+            // socket.disconnect()
             return;
         }
         socket.leave(roomId);
@@ -48,5 +49,18 @@ export function eventHandler(socket:Socket, io: any) {
         }
         io.to(data.roomId).emit("receivedVideo", {userId: data.userId, videoId: data.videoId})
     })
-}
 
+    socket.on("videoAction", (data:{roomId: string, userId: string, action: string, currentTime: number}) => {
+        if (!checkRoomExist(data.roomId)) {
+            return;
+        }
+        if (!isHost(data.roomId, data.userId)){return;}
+        if (data.action === "PLAY" ) {
+            socket.to(data.roomId).emit("videoAction", { action: "PLAY", currentTime: data.currentTime })
+        }
+
+        if (data.action === "PAUSE") {
+            socket.to(data.roomId).emit("videoAction", { action: "PAUSE", currentTime: data.currentTime })
+        }
+    })
+}
