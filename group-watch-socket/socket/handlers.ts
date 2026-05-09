@@ -62,5 +62,9 @@ export function eventHandler(socket:Socket, io: any) {
         if (data.action === "PAUSE") {
             socket.to(data.roomId).emit("videoAction", { action: "PAUSE", currentTime: data.currentTime })
         }
+
+        if (data.action === "SEEK") {
+            socket.to(data.roomId).emit("videoAction", { action: "SEEK", currentTime: data.currentTime })
+        }
     })
 }

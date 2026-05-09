@@ -63,6 +63,10 @@ export default function Page() {
             if (data.action === "PAUSE") {
                 (playerRef as any).current?.pauseVideo();
             }
+
+            if (data.action === "SEEK") {
+                 (playerRef as any).current?.seekTo(data.currentTime);
+            }
         })
 
         // running the scriptdownloads the source code logic and execute it, it creates a object window.yt so if it is not created it creates a script tag and add it to the dom and define a global callback function onYouTubeIframeAPIReady which is called when the script is loaded and ready to use and in that we set apiReady to true so that we can render the player
@@ -118,6 +122,10 @@ export default function Page() {
 
                         if (currEventState === (window as any).YT.PlayerState.PAUSED) {
                             socketRef.current?.emit("videoAction", { action:"PAUSE",  currentTime: currentTime, roomId: id, userId: userId });
+                        }
+
+                        if (currEventState === (window as any).YT.PlayerState.SEEK) {
+                             socketRef.current?.emit("videoAction", { action:"SEEK",  currentTime: currentTime, roomId: id, userId: userId });
                         }
                     }
                 }
