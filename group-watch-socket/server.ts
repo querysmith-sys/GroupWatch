@@ -4,6 +4,7 @@ import roomRouter from "./api/room"
 import { createServer } from "http";
 import { Server, Socket } from "socket.io";
 import { eventHandler } from "./socket/handlers";
+
 const app = express();
 app.use(cors({
   origin: "http://localhost:3000"

@@ -1,5 +1,6 @@
 import express from "express";
 import {CreateRoom} from "../services/room.service"
+import { checkRoomExist } from "../services/room.service";
 const roomRouter = express.Router();
 
 roomRouter.post("/createRoom", (req, res) => {
@@ -11,6 +12,13 @@ roomRouter.post("/createRoom", (req, res) => {
     } catch (error) {
         res.status(500).json({msg: "CreateRoom endpoint Issue"})
     }
+})
+
+roomRouter.post("/checkId", (req, res) => {
+    const  {roomId}  = req.body;
+    if (!roomId) {console.log("checkRoom Route Failed"); return};
+    const isExist = checkRoomExist(roomId);
+    return res.status(200).json({roomExist: isExist});
 })
 
 export default roomRouter;

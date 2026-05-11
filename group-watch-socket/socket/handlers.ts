@@ -17,12 +17,20 @@ type chatData = {
 export function eventHandler(socket:Socket, io: any) {
     socket.on("joinRoom", ({roomId, userId}:{roomId: string, userId: string}) => {
         const room = JoinRoom(roomId, userId);
+        if (!room) {
+            console.log("Failed to join room");
+            return;
+        }
         socket.join(roomId);
         socket.to(room.id).emit("userJoined", { msg: `${userId} joined the room ${room.name}` })
     })
 
     socket.on("leaveRoom", ({roomId, userId}:{roomId: string, userId: string}) => {
         const room = LeaveRoom(roomId, userId);
+        if (!room) {
+            console.log("Failed to leave room");
+            return;
+        }
         if (room?.deleted) {
             console.log("Host left, room deleted")
             socket.to(roomId).emit("hostLeft", { msg: `The host has left the room ${room.name}` })

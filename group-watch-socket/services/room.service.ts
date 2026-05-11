@@ -27,7 +27,8 @@ export const CreateRoom =  ( room_name:string, userId:string ) => {
 export const JoinRoom =  ( roomId:string, userId:string) => {
     const room = rooms.get(roomId);
     if (!room) {
-        throw new Error("Room not found");
+       console.log("Room not Found");
+       return;
     }
     if (room.users.includes(userId)) return room;
     room.users.push(userId);
