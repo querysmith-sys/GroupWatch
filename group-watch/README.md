@@ -9,7 +9,6 @@ GroupWatch is a real-time synchronized video streaming platform that allows grou
 - **Synchronized Playback** - All group members watch at the exact same timestamp
 - **Group Chat** - Real-time messaging while watching
 - **YouTube Integration** - Easy integration with YouTube links
-- **Group Management** - Create and manage viewing groups
 - **Live Reactions** - Share reactions in real-time
 
 ## Getting Started
