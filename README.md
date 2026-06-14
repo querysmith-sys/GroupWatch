@@ -6,39 +6,19 @@ A real-time synchronized video streaming platform that allows groups of people t
 
 GroupWatch enables seamless group viewing experiences by synchronizing playback across all participants in real-time. Create a room, invite friends via room ID, and enjoy synchronized YouTube videos with live chat—all without leaving the platform.
 
+![Project Logo](images/home.png)
+
+![Project Logo](images/watchpage.png)
+
 ##  Key Features
 
-- **🎯 Synchronized Playback** - All group members watch at the exact same timestamp with host-controlled play, pause, and seek controls
-- **💬 Real-time Group Chat** - Communicate instantly with all participants in the room
-- **🎥 YouTube Integration** - Stream any YouTube video seamlessly using the official YouTube Iframe API
-- **👥 Room Management** - Create custom rooms or join existing ones using room IDs
-- **🔐 Host Controls** - Room hosts can control playback for synchronized viewing
+- ** Synchronized Playback** - All group members watch at the exact same timestamp with host-controlled play, pause, and seek controls
+- ** Real-time Group Chat** - Communicate instantly with all participants in the room
+- ** YouTube Integration** - Stream any YouTube video seamlessly using the official YouTube Iframe API
+- ** Room Management** - Create custom rooms or join existing ones using room IDs
+- ** Host Controls** - Room hosts can control playback for synchronized viewing
 
-##  Project Structure
-
-```
-GroupWatch/
-├── group-watch/              # Next.js frontend application
-│   ├── app/
-│   │   ├── watch/[id]/       # Video watching page with real-time synchronization
-│   │   ├── context/          # React context for host state management
-│   │   ├── layout.tsx        # Root layout
-│   │   └── page.tsx          # Home page (room creation/joining)
-│   ├── package.json
-│   └── tsconfig.json
-│
-└── group-watch-socket/       # Express + Socket.io backend server
-    ├── server.ts             # Main server entry point
-    ├── api/
-    │   └── room.ts           # Room creation API routes
-    ├── services/
-    │   └── room.service.ts   # Room management logic
-    ├── socket/
-    │   └── handlers.ts       # Socket.io event handlers
-    └── package.json
-```
-
-## 🛠️ Technology Stack
+##  Technology Stack
 
 ### Frontend
 - **Next.js 16.2.4** - React framework with App Router
@@ -124,13 +104,13 @@ The Next.js app will run on `http://localhost:3000`
 - Room state is stored in-memory; data is lost on server restart
 - User authentication is basic (localStorage-based)
 - Error handling and validation could be enhanced
+- some edge cases for video synchronization may need improvement
 
 ## 📦 Available Scripts
 
 ### Frontend (group-watch)
 - `pnpm run dev` - Start development server
 - `pnpm run build` - Build for production
-- `pnpm run start` - Start production server
 - `pnpm run lint` - Run ESLint
 
 ### Backend (group-watch-socket)
