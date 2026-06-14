@@ -75,47 +75,21 @@ The Next.js app will run on `http://localhost:3000`
 5. **Watch Together**: All participants see synchronized playback controlled by the host
 6. **Chat**: Send messages in real-time with other room participants
 
-##  Socket.io Events
-
-### Client → Server
-- `joinRoom` - User joins a room
-- `leaveRoom` - User leaves a room
-- `sendMessage` - Send a chat message
-- `sendVideo` - Share a YouTube video
-- `videoAction` - Control video playback (play/pause/seek) - Host only
-
-### Server → Client
-- `userJoined` - Notification when a user joins
-- `userLeft` - Notification when a user leaves
-- `hostLeft` - Notification when host disconnects
-- `receivedMessage` - Chat message received
-- `receivedVideo` - Video share received
-- `videoAction` - Playback action received
 
 ##  Room Logic
 
 - **Room Creation**: Any user can create a room; the creator becomes the host
 - **Host Privileges**: Only the host can control video playback (play, pause, seek)
-- **Room Deletion**: When the host leaves, the room is automatically deleted
+- **Room Deletion**: When the host leaves, the room is automatically deleted, no button, if the host tab is closed, the room is deleted, and all users are notified
 - **User Management**: Multiple users can join a room using its ID; users are tracked by unique userId (stored in localStorage)
 
-##  Known Limitations & TODOs
+##  Limitations & TODOs
 
 - Room state is stored in-memory; data is lost on server restart
 - User authentication is basic (localStorage-based)
 - Error handling and validation could be enhanced
 - some edge cases for video synchronization may need improvement
 
-## 📦 Available Scripts
-
-### Frontend (group-watch)
-- `pnpm run dev` - Start development server
-- `pnpm run build` - Build for production
-- `pnpm run lint` - Run ESLint
-
-### Backend (group-watch-socket)
-- `pnpm run dev` - Start development server with auto-reload
-
-## 📄 License
+##  License
 
 MIT LICENSE. See [LICENSE](../LICENSE) for details.
